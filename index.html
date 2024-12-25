@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Sinhetic</title>
+    <meta name="viewport" content="user-scalable=no,initial-scale=1,width=device-width,height=device-height,maximum-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+    <link rel="stylesheet" href="ratchet/css/ratchet.min.css">
+    <link rel="stylesheet" href="ratchet/css/ratchet-theme-ios.min.css">
+    <style>
+      body {
+        font-family: 'Helvetica Neue', Arial, sans-serif;
+        background-color: #e0f7fa;
+        color: #333;
+        margin: 0;
+        padding: 0;
+      }
+      #translation {
+        margin: 20px;
+        padding: 20px;
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: box-shadow 0.3s ease;
+      }
+      #translation:hover {
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      }
+      #output {
+        display: none;
+        width: 90%;
+        margin: 20px auto;
+        padding: 15px;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        transition: box-shadow 0.3s ease;
+      }
+      #output:focus {
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+      }
+      #bar-bottom {
+        padding: 10px;
+        background-color: #ffffff;
+        border-top: 1px solid #ddd;
+        box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.1);
+      }
+      #dictionary {
+        height: 50px;
+        padding: 10px 0;
+        margin: 10px 0;
+        overflow: hidden;
+        background-color: #ffffff;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      .word {
+        display: inline-block;
+        margin: 5px;
+        padding: 10px;
+        background: #ffeb3b;
+        color: #111;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+      }
+      .word:hover {
+        background: #ffc107;
+      }
+      .activeword {
+        background: #ffc107;
+      }
+      #deletebtn {
+        display: none;
+        float: right;
+        background-color: #f44336;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 15px;
+        cursor: pointer;
+        transition: background 0.3s ease;
+      }
+      #deletebtn:hover {
+        background-color: #d32f2f;
+      }
+      .btn-nav {
+        color: #007aff;
+        transition: color 0.3s ease;
+      }
+      .btn-nav:hover {
+        color: #0056b3;
+      }
+      .icon {
+        margin-right: 5px;
+      }
+      .bar-nav {
+        background-color: #4caf50;
+        color: #fff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      .bar-nav .title {
+        color: #fff;
+      }
+      .btn-link {
+        color: #fff;
+      }
+    </style>
+    
+    <script type="text/javascript" src="cordova.js"></script>
+    <script type="text/javascript" src="ratchet/js/ratchet.min.js"></script>
+    <script type="text/javascript" src="js/lodash.min.js"></script>
+    <script type="text/javascript" src="js/sinhala.js"></script>
+    <script type="text/javascript" src="js/sinhaladict.js"></script>
+    <script type="text/javascript" src="js/app.js"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const translationDiv = document.getElementById('translation');
+        const outputTextarea = document.getElementById('output');
+        const dictionaryDiv = document.getElementById('dictionary');
+        const deleteBtn = document.getElementById('deletebtn');
+        const pinput = document.getElementById('pinput');
+
+        // Show output textarea when translation div is clicked
+        translationDiv.addEventListener('click', function() {
+          outputTextarea.style.display = 'block';
+          outputTextarea.focus();
+        });
+
+        // Hide output textarea when it loses focus
+        outputTextarea.addEventListener('blur', function() {
+          outputTextarea.style.display = 'none';
+        });
+
+        // Add interactivity to dictionary words
+        dictionaryDiv.addEventListener('click', function(event) {
+          if (event.target.classList.contains('word')) {
+            event.target.classList.toggle('activeword');
+          }
+        });
+
+        // Show delete button when a word is active
+        dictionaryDiv.addEventListener('click', function() {
+          const activeWords = dictionaryDiv.querySelectorAll('.activeword');
+          if (activeWords.length > 0) {
+            deleteBtn.style.display = 'block';
+          } else {
+            deleteBtn.style.display = 'none';
+          }
+        });
+
+        // Clear input field on focus
+        pinput.addEventListener('focus', function() {
+          pinput.value = '';
+        });
+      });
+    </script>
+</head>
+<body onload="tr.create()">
+  <header class="bar bar-nav">
+    <button class="btn btn-link btn-nav pull-left" onclick="tr.clearWords()">
+      <span class="icon icon-close"></span>
+      Clear Text
+    </button>
+    <button class="btn btn-link btn-nav pull-right" onclick="tr.copyText()">
+      <span class="icon icon-share"></span>
+      Copy Text
+    </button>
+    <h1 class="title">Sinhetic</h1>
+  </header>
+
+  <div class="content" id="content">
+    <div id="translation"></div>
+    <textarea id="output" onblur="tr.hideOutput()"></textarea>
+  </div>
+  
+  <nav id="bar-bottom" class="bar bar-tab">
+    <button id="deletebtn" class="btn btn-negative" onclick="tr.deleteWord()">
+      <span class="icon icon-trash"></span>
+    </button>
+    <div id="dictionary"></div>
+    <input id="pinput" type="text" placeholder="Type Something..." onkeyup="tr.engToSin(event)" autocorrect="off" autocapitalize="off" autofocus>
+  </nav>
+</body>
+</html>
